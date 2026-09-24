@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jax Portofolio</title>
+    <meta name="monetag" content="27ed7709f3b68e1770c22365f35d9709">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        /* ── TOKENS ─────────────────────────────────────── */
+        :root {
+            --bg:#fff; --text:#1a1a1a; --accent:#000;
+            --secondary:#f4f4f4; --border:#e0e0e0; --muted:#757575;
+            --hbg:rgba(255,255,255,.92);
+            --cs:0 8px 24px rgba(0,0,0,.07);
+            --ch:0 14px 40px rgba(0,0,0,.14);
+            --cb:#f8f8f8;
+            --jk:#005cc5; --js:#032f62;
+        }
+        body.dark {
+            --bg:#0a0a0a; --text:#f4f4f4; --accent:#fff;
+            --secondary:#111; --border:#222; --muted:#a0a0a0;
+            --hbg:rgba(10,10,10,.92);
+            --cs:0 8px 24px rgba(0,0,0,.35);
+            --ch:0 14px 40px rgba(0,0,0,.55);
+            --cb:#1e1e1e;
+            --jk:#9cdcfe; --js:#ce9178;
+        }
+
+        /* ── MOOD HUJAN — background sekitar jadi lebih dingin/gelap ─── */
+        /* (bukan overlay layar, tapi token warna asli yang berubah) */
+        body.raining {
+            --bg:#cdd3df; --secondary:#b9c0d0; --border:#a7afc4;
+            --hbg:rgba(205,211,223,.92); --cb:#bcc3d4;
+        }
+        body.dark.raining {
+            --bg:#05070d; --secondary:#0a0e1a; --border:#171f33;
+            --hbg:rgba(5,7,13,.92); --cb:#0c111f;
+        }
+
+        /* ── RESET ───────────────────────────────────────── */
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        html{scroll-behavior:smooth;overflow-x:hidden;max-width:100%;background:var(--bg)}
+        body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text);
+             transition:background 1.8s ease,color .3s;overflow-x:hidden;width:100%;max-width:100%;
+             padding-top:64px}
+        .container{max-width:1100px;margin:0 auto;padding:0 1.5rem;width:100%}
+
+        /* ── RAIN ────────────────────────────────────────── */
+        #rc{position:fixed;inset:0;pointer-events:none;z-index:9999;
+            opacity:0;transition:opacity 1.4s ease}
+        #rc.on{opacity:1}
+
+        /* ── KABUT / AWAN MENDUNG (lembut, tidak kartun) ──── */
+        #clouds{position:fixed;inset:0;top:0;height:60vh;pointer-events:none;
+                z-index:9997;opacity:0;transition:opacity 2.6s ease;overflow:hidden;
+                mix-blend-mode:normal}
+        #clouds.on{opacity:1}
+        .cld{position:absolute;border-radius:50%;filter:blur(38px);
+             background:radial-gradient(ellipse at center, rgba(60,68,86,.40), rgba(60,68,86,0) 70%)}
+        body.dark .cld{background:radial-gradient(ellipse at center, rgba(14,18,30,.55), rgba(14,18,30,0) 70%)}
+        .cld1{width:60vw;height:34vh;top:-10%;left:-30%; animation:cldA 150s linear infinite}
+        .cld2{width:50vw;height:30vh;top:2%;  left:30%;  animation:cldB 200s linear infinite}
+        .cld3{width:70vw;height:38vh;top:-16%;left:60%;  animation:cldC 240s linear infinite}
+        @keyframes cldA{from{transform:translateX(0)}to{transform:translateX(70vw)}}
+        @keyframes cldB{from{transform:translateX(0)}to{transform:translateX(-80vw)}}
+        @keyframes cldC{from{transform:translateX(0)}to{transform:translateX(-60vw)}}
+
+        /* ── PETIR (halus, sekilas dingin-kebiruan) ───────── */
+        #lightning{position:fixed;inset:0;pointer-events:none;z-index:9998;
+                   background:#aebedd;opacity:0}
+
+        /* ── TOAST NOTIFIKASI ──────────────────────────────── */
+        #toast{position:fixed;left:50%;bottom:26px;z-index:10000;
+               transform:translateX(-50%) translateY(16px);
+               background:var(--accent);color:var(--bg);
+               padding:10px 20px;border-radius:30px;
+               font-size:.8rem;font-weight:700;letter-spacing:.2px;
+               box-shadow:var(--ch);opacity:0;pointer-events:none;
+               max-width:88vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+               transition:opacity .4s ease,transform .4s ease}
+        #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+
+
+        /* ── HEADER ──────────────────────────────────────── */
+        header{position:fixed;top:0;width:100%;background:var(--hbg);
+               backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+               border-bottom:1px solid var(--border);z-index:2000;
+               transition:background 1.8s ease,border-color 1.8s ease}
+        .hc{display:flex;justify-content:space-between;align-items:center;height:64px}
+        .logo a{font-weight:800;text-transform:uppercase;text-decoration:none;
+                color:var(--text);letter-spacing:2px;transition:color .25s}
+        .logo a:hover{color:var(--muted)}
+        .nw{display:flex;align-items:center;gap:16px}
+
+        /* nav links */
+        #nav ul{display:flex;gap:18px;list-style:none;align-items:center}
+        #nav a{text-decoration:none;color:var(--text);font-weight:600;font-size:.85rem;
+               text-transform:uppercase;letter-spacing:.4px;padding:3px 0;
+               border-bottom:2px solid transparent;transition:color .25s,border-color .25s}
+        #nav a:hover,#nav a.on{color:var(--muted);border-bottom-color:var(--muted)}
+        .nc{display:none}
+
+        /* translate btn */
+        .tlb{background:none;border:1px solid var(--border);color:var(--text);
+             font-size:.75rem;font-weight:700;letter-spacing:.8px;cursor:pointer;
+             display:flex;align-items:center;gap:4px;padding:5px 10px;
+             border-radius:20px;transition:background .2s,color .2s,border-color .2s;
+             white-space:nowrap;font-family:inherit}
+        .tlb:hover{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+
+        /* theme switch */
+        .ts{display:inline-flex;align-items:center;height:26px;position:relative;
+            width:48px;cursor:pointer;flex-shrink:0}
+        .ts input{display:none}
+        .sl{background:#ccc;position:absolute;inset:0;transition:background .3s;border-radius:34px}
+        .sl::before{content:"";position:absolute;height:18px;width:18px;left:4px;top:4px;
+                    background:#fff;transition:transform .3s;border-radius:50%;z-index:2;
+                    box-shadow:0 1px 3px rgba(0,0,0,.2)}
+        input:checked+.sl{background:#444}
+        input:checked+.sl::before{transform:translateX(22px);background:#eee}
+        .sl .si{position:absolute;top:5px;font-size:10px;z-index:1;transition:opacity .25s}
+        .si-s{right:6px;color:#f39c12;opacity:1}
+        .si-m{left:7px;color:#f1c40f;opacity:0}
+        input:checked+.sl .si-s{opacity:0}
+        input:checked+.sl .si-m{opacity:1}
+
+        /* hamburger */
+        .hbtn{display:none;background:none;border:none;font-size:1.4rem;
+              color:var(--text);cursor:pointer;padding:4px;transition:color .25s}
+
+        /* ── HERO ────────────────────────────────────────── */
+        .hero{height:calc(100vh - 64px);min-height:500px;display:flex;align-items:center;
+              background:linear-gradient(rgba(0,0,0,.58),rgba(0,0,0,.58)) center/cover fixed,
+                          url(src/jax3.jpeg) center/cover;
+              color:#fff;overflow:hidden;width:100%}
+        .hcnt{padding-left:5%;animation:sil .9s ease-out;max-width:600px}
+        .hcnt p{font-size:1.1rem;letter-spacing:3px;text-transform:uppercase;
+                margin-bottom:1rem;opacity:.88}
+        .hcnt h2{font-size:3.4rem;font-weight:800;margin-bottom:1.8rem;
+                 text-shadow:1px 2px 6px rgba(0,0,0,.3)}
+        .btn{position:relative;display:inline-flex;align-items:center;gap:10px;
+             background:#fff;color:#000!important;padding:15px 40px;border:none;
+             font-weight:800;font-size:.9rem;letter-spacing:1.5px;cursor:pointer;
+             text-decoration:none;transition:all .35s cubic-bezier(.23,1,.32,1);
+             overflow:hidden;border-radius:4px;z-index:1}
+        .btn::before{content:"";position:absolute;top:0;left:-100%;width:100%;height:100%;
+                     background:#000;transition:left .35s cubic-bezier(.23,1,.32,1);z-index:-1}
+        .btn:hover{color:#fff!important;transform:translateY(-4px);box-shadow:0 12px 28px rgba(255,255,255,.1)}
+        .btn:hover::before{left:0}
+        .btn:hover i{transform:translateX(6px)}
+        .btn i{transition:transform .3s}
+
+        /* ── SECTIONS ────────────────────────────────────── */
+        .sec{padding:72px 0;transition:background-color 1.8s ease}
+        .ttl{font-size:2.2rem;text-align:center;margin-bottom:2.5rem;font-weight:800}
+
+        /* ── ABOUT ───────────────────────────────────────── */
+        .af{display:flex;align-items:center;gap:44px;flex-wrap:wrap}
+        .ai{flex:1;min-width:260px;position:relative;padding-bottom:24px}
+        .at{flex:1;min-width:260px}
+        .ai img{width:100%;height:380px;border-radius:18px;object-fit:cover;
+                box-shadow:var(--cs);transition:transform .4s,box-shadow .4s}
+        .ai:hover img{transform:scale(1.02) rotate(-1deg);box-shadow:var(--ch)}
+        .xb{position:absolute;bottom:-14px;right:10px;background:var(--accent);
+            color:var(--bg);padding:14px 16px;border-radius:14px;text-align:center;
+            font-weight:800;animation:fl 4s ease-in-out infinite;
+            box-shadow:0 8px 18px rgba(0,0,0,.2);font-size:.78rem;max-width:140px}
+        .at h3{font-size:1.7rem;margin-bottom:12px;font-weight:700}
+        .at p{line-height:1.8;color:var(--muted);margin-bottom:16px;font-size:.95rem;
+              word-break:break-word;overflow-wrap:break-word}
+
+        /* ── MINI PLAYER ─────────────────────────────────── */
+        .mp{margin-top:20px;background:var(--secondary);border:1px solid var(--border);
+            border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;
+            box-shadow:var(--cs);transition:box-shadow .3s,background-color 1.8s ease,border-color 1.8s ease;width:100%}
+        .mp:hover{box-shadow:var(--ch)}
+        .mpc{width:48px;height:48px;border-radius:10px;background:var(--border);
+             flex-shrink:0;overflow:hidden;display:flex;align-items:center;
+             justify-content:center;font-size:20px;position:relative;
+             transition:border-radius .6s ease}
+        .mpc img{width:100%;height:100%;object-fit:cover;border-radius:10px;
+                 transition:border-radius .6s ease}
+        .mpc.sp{border-radius:50%;box-shadow:inset 0 0 0 3px var(--bg)}
+        .mpc.sp img{border-radius:50%}
+        .mpc.sp img,.mpc.sp span{animation:spin 4.5s linear infinite}
+        .mpc.sp::after{content:'';position:absolute;inset:0;border-radius:50%;
+             margin:auto;width:7px;height:7px;background:var(--bg);
+             box-shadow:0 0 0 1.5px var(--border);
+             top:50%;left:50%;transform:translate(-50%,-50%)}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .mpi{flex:1;min-width:0}
+        .mpt{font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;
+             text-overflow:ellipsis;color:var(--text)}
+        .mpa{font-size:.73rem;color:var(--muted);margin-top:2px;white-space:nowrap;
+             overflow:hidden;text-overflow:ellipsis}
+        .mpb{margin-top:7px;height:3px;background:var(--border);border-radius:3px;cursor:pointer}
+        .mpf{height:100%;background:var(--accent);border-radius:3px;
+             width:0%;transition:width .25s linear}
+        .mptm{display:flex;justify-content:space-between;font-size:.65rem;
+              color:var(--muted);margin-top:3px}
+        .mpbtn{width:40px;height:40px;border-radius:50%;background:var(--accent);
+               color:var(--bg);border:none;cursor:pointer;display:flex;align-items:center;
+               justify-content:center;flex-shrink:0;transition:transform .2s,opacity .2s}
+        .mpbtn:hover{transform:scale(1.1);opacity:.85}
+        .mpl{font-size:.76rem;color:var(--muted);font-style:italic}
+
+        /* music web link */
+        .mwl{display:flex;align-items:center;gap:8px;margin-top:10px;
+             padding:8px 14px;border:1px solid var(--border);border-radius:10px;
+             text-decoration:none;color:var(--muted);font-size:.82rem;font-weight:600;
+             transition:background .2s,color .2s,border-color .2s;width:100%}
+        .mwl:hover{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+        .mwl i{font-size:.9rem}
+
+        /* ── SKILLS ──────────────────────────────────────── */
+        .sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:20px}
+        .sk{background:var(--secondary);border:1px solid var(--border);border-radius:14px;
+            padding:28px 24px;text-align:center;transition:transform .35s,box-shadow .35s,background-color 1.8s ease,border-color 1.8s ease}
+        .sk:hover{transform:translateY(-8px);box-shadow:var(--ch)}
+        .sk i{font-size:2.6rem;margin-bottom:14px;display:block;transition:transform .3s}
+        .sk:hover i{transform:scale(1.15) rotate(8deg)}
+        .sk h4{margin:10px 0 8px;font-size:1.1rem}
+        .sk p{color:var(--muted);font-size:.85rem;line-height:1.55}
+
+        /* ── GALLERY ─────────────────────────────────────── */
+        .gg{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px}
+        .gc{border-radius:14px;overflow:hidden;cursor:pointer;background:var(--secondary);
+            border:1px solid var(--border);transition:transform .35s,box-shadow .35s,background-color 1.8s ease,border-color 1.8s ease}
+        .gc:hover{transform:translateY(-8px);box-shadow:var(--ch)}
+        .gic{height:230px;overflow:hidden}
+        .gc img{width:100%;height:100%;object-fit:cover;filter:grayscale(1);
+                transition:filter .5s,transform .5s}
+        .gc:hover img{filter:grayscale(0);transform:scale(1.08)}
+        .gin{padding:12px;text-align:center;font-size:.9rem;font-weight:600}
+
+        /* ── LIGHTBOX ────────────────────────────────────── */
+        .lb{position:fixed;inset:0;background:rgba(0,0,0,.95);display:none;
+            align-items:center;justify-content:center;z-index:5000;backdrop-filter:blur(4px)}
+        .lb.on{display:flex}
+        .lb img{max-width:88%;max-height:82%;border:4px solid #fff;border-radius:6px}
+        .lbc{position:absolute;top:24px;right:32px;font-size:2.6rem;color:#fff;
+             cursor:pointer;line-height:1}
+
+        /* ── PROJECTS ────────────────────────────────────── */
+        .pg{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:26px}
+        .jc{background:var(--cb);border-radius:12px;overflow:hidden;
+            box-shadow:0 16px 36px rgba(0,0,0,.09);font-family:"Courier New",monospace;
+            transition:transform .35s,box-shadow .35s,background-color 1.8s ease,border-color 1.8s ease;border:1px solid var(--border);
+            display:flex;flex-direction:column}
+        .jc:hover{transform:translateY(-8px);box-shadow:0 22px 46px rgba(0,0,0,.18)}
+        .jh{background:#333;padding:10px 14px;display:flex;align-items:center;
+            justify-content:space-between}
+        .jd{display:flex;gap:5px}
+        .jti{color:#aaa;font-size:.73rem;font-weight:bold}
+        .jb{padding:22px;color:#d4d4d4;font-size:.92rem;line-height:1.6;flex-grow:1}
+        .jl{display:flex;gap:14px}
+        .ln{color:#5a5a5a;min-width:18px;text-align:right;user-select:none}
+        .jk{color:var(--jk)}
+        .js{color:var(--js)}
+        .jbr{color:#ffd700}
+        .jf{padding:13px 22px;background:#252526;display:flex;gap:18px;
+            border-top:1px solid #333;flex-wrap:wrap}
+        .jlk{color:#4fc1ff;text-decoration:none;font-size:.82rem;display:flex;
+             align-items:center;gap:5px;transition:color .25s,transform .25s;font-weight:600}
+        .jlk:hover{color:#fff;transform:translateX(3px)}
+
+        /* ── CONTACT ─────────────────────────────────────── */
+        .sc{display:flex;justify-content:center;gap:18px;margin-bottom:26px;flex-wrap:wrap}
+        .sc a{font-size:1.9rem;color:var(--text);transition:transform .35s,color .25s;
+              text-decoration:none}
+        .sc a:hover{transform:translateY(-6px) scale(1.15)}
+        .sc a.gh:hover{color:#333} .sc a.li:hover{color:#0077b5}
+        .sc a.wa:hover{color:#25d366} .sc a.dc:hover{color:#5865f2}
+        .sc a.ig:hover{color:#e4405f}
+        .cc{max-width:560px;margin:0 auto;padding:32px;background:var(--secondary);
+            border:1px solid var(--border);border-radius:18px;transition:background-color 1.8s ease,border-color 1.8s ease}
+        .cf{width:100%;padding:13px;margin:8px 0 18px;border:1px solid var(--border);
+            background:var(--bg);color:var(--text);border-radius:8px;
+            font-family:inherit;font-size:.9rem;
+            transition:border-color .25s,box-shadow .25s}
+        .cf:focus{outline:none;border-color:var(--accent);
+                  box-shadow:0 0 0 3px rgba(0,0,0,.07)}
+        .sb{width:100%;padding:13px;background:var(--accent);color:var(--bg);border:none;
+            font-weight:700;cursor:pointer;border-radius:8px;
+            transition:opacity .25s,transform .25s;font-family:inherit;
+            font-size:.9rem;letter-spacing:.8px}
+        .sb:hover{opacity:.8;transform:translateY(-2px)}
+        .sb:disabled{opacity:.55;cursor:not-allowed;transform:none}
+        #sm{text-align:center;margin-top:8px;font-weight:600;min-height:22px}
+        label{display:block;margin-bottom:4px;font-weight:600;font-size:.88rem}
+
+        /* ── FOOTER ──────────────────────────────────────── */
+        footer.ft{border-top:1px solid var(--border);padding:28px 0;
+                  transition:border-color .3s}
+        .ftc{display:flex;flex-wrap:wrap;justify-content:space-between;
+             align-items:center;gap:10px;font-size:.85rem;color:var(--muted)}
+        .ftc a{color:var(--muted);text-decoration:none;font-weight:600;
+               transition:color .2s}
+        .ftc a:hover{color:var(--text)}
+
+        /* ── KEYFRAMES ───────────────────────────────────── */
+        @keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+        @keyframes sil{from{opacity:0;transform:translateX(-46px)}to{opacity:1;transform:none}}
+
+        /* ── MOBILE ──────────────────────────────────────── */
+        @media(max-width:768px){
+            .hcnt h2{font-size:2rem;margin-bottom:1.4rem}
+            .hcnt p{font-size:.8rem}
+            .btn{padding:12px 28px;font-size:.82rem;gap:8px}
+            .hbtn{display:block}
+            #nav{position:fixed;top:0;right:-100%;width:100%;height:100vh;
+                 background:var(--hbg);backdrop-filter:blur(22px);
+                 -webkit-backdrop-filter:blur(22px);
+                 display:flex;flex-direction:column;align-items:center;
+                 justify-content:center;
+                 transition:right .4s cubic-bezier(.23,1,.32,1);z-index:3000}
+            #nav.on{right:0}
+            .nc{display:block;position:absolute;top:18px;right:22px;
+                font-size:1.9rem;color:var(--text);cursor:pointer;
+                background:none;border:none;line-height:1}
+            #nav ul{flex-direction:column;gap:28px;text-align:center}
+            #nav a{font-size:1.05rem}
+            .pg{grid-template-columns:1fr}
+            .af{flex-direction:column;gap:32px;align-items:center}
+            .ai{min-width:0;width:100%;max-width:340px;margin:0 auto}
+            .ai img{height:220px;width:100%}
+            .at{min-width:0;width:100%}
+            .at h3{font-size:1.4rem}
+            .at p{font-size:.88rem}
+            .xb{bottom:-14px;right:8px;padding:12px;font-size:.7rem;max-width:120px}
+            .sg{grid-template-columns:1fr 1fr}
+            .gg{grid-template-columns:1fr}
+            .ttl{font-size:1.8rem}
+            .tlb span.ll{display:none}
+            .tlb{padding:6px 9px}
+            .mp{padding:10px 12px;gap:8px;width:100%}
+            .mpc{width:40px;height:40px;flex-shrink:0}
+            .mpi{min-width:0;flex:1;overflow:hidden}
+            .mpt{font-size:.8rem}
+            .mpa{font-size:.7rem}
+            .mpbtn{width:36px;height:36px;flex-shrink:0}
+            .mwl{font-size:.78rem;padding:7px 10px}
+            .cc{padding:22px 18px}
+        }
+        @media(max-width:420px){
+            .container{padding:0 1rem}
+            .sg{grid-template-columns:1fr}
+            .nw{gap:10px}
+            .ai{max-width:100%}
+            .mp{gap:6px}
+            .mpc{width:36px;height:36px}
+            .mpbtn{width:32px;height:32px}
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="rc"></canvas>
+<div id="toast"></div>
+<div id="lightning"></div>
+<div id="clouds">
+    <div class="cld cld1"></div>
+    <div class="cld cld2"></div>
+    <div class="cld cld3"></div>
+</div>
+
+<div class="lb" id="lb">
+    <span class="lbc" id="lbc">&times;</span>
+    <img src="" id="lbi" alt="Gallery">
+</div>
+
+<header>
+    <div class="container hc">
+        <div class="logo"><a href="#home">JAX.DEV</a></div>
+        <div class="nw">
+            <nav id="nav">
+                <button class="nc" id="nc" aria-label="Tutup menu"><i class="fas fa-times"></i></button>
+                <ul>
+                    <li><a href="#home"     data-t="nav_home">Home</a></li>
+                    <li><a href="#about"    data-t="nav_about">About</a></li>
+                    <li><a href="#skill"    data-t="nav_skill">Skill</a></li>
+                    <li><a href="#gallery"  data-t="nav_gallery">Gallery</a></li>
+                    <li><a href="#projects" data-t="nav_projects">Projects</a></li>
+                    <li><a href="#contact"  data-t="nav_contact">Contact</a></li>
+                </ul>
+            </nav>
+            <button class="tlb" id="tlb" aria-label="Toggle language">
+                <i class="fas fa-language"></i>
+                <span class="ll" id="ll">EN</span>
+            </button>
+            <label class="ts" title="Toggle theme">
+                <input type="checkbox" id="tt" aria-label="Dark mode">
+                <span class="sl">
+                    <i class="fas fa-sun  si si-s"></i>
+                    <i class="fas fa-moon si si-m"></i>
+                </span>
+            </label>
+            <button class="hbtn" id="hbtn" aria-label="Buka menu"><i class="fas fa-bars"></i></button>
+        </div>
+    </div>
+</header>
+
+<!-- HERO -->
+<section id="home" class="hero">
+    <div class="hcnt">
+        <p data-t="hero_sub">Losers</p>
+        <h2 data-t="hero_title">Untitled</h2>
+        <a href="#about" class="btn">
+            <span data-t="btn_explore">EXPLORE</span>
+            <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="sec">
+    <div class="container">
+        <h2 class="ttl" data-t="nav_about">ABOUT ME</h2>
+        <div class="af">
+            <div class="ai">
+                <img src="src/mainjax.jpeg" alt="About Jax" loading="lazy">
+                <div class="xb"><span data-t="exp_badge">Sometimes to love someone u gotta be stranger.</span></div>
+            </div>
+            <div class="at">
+                <h3 data-t="about_q">Who is J?</h3>
+                <p data-t="about_p1">Nobody knows.</p>
+                <p data-t="about_p2">A passionate developer and designer creating amazing digital experiences.</p>
+
+                <!-- MINI MUSIC PLAYER -->
+                <div class="mp" id="mp">
+                    <div class="mpc" id="mpc"><span>🎵</span></div>
+                    <div class="mpi">
+                        <div class="mpt" id="mpt"><span class="mpl">Memuat lagu...</span></div>
+                        <div class="mpa" id="mpa"></div>
+                        <div class="mpb" id="mpb"><div class="mpf" id="mpf"></div></div>
+                        <div class="mptm">
+                            <span id="mc">0:00</span>
+                            <span id="md">0:00</span>
+                        </div>
+                    </div>
+                    <button class="mpbtn" id="mpbtn" aria-label="Play/Pause">
+                        <svg id="mpico" width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                    </button>
+                </div>
+                <audio id="mau"></audio>
+
+                <!-- LINK KE MUSIC WEB -->
+                <a href="https://jaxportofolio.me/musicplayer.php" target="_blank" rel="noopener" class="mwl">
+                    <i class="fas fa-music"></i>
+                    <span data-t="mwl_txt">Lihat Web Music Player Lengkap</span>
+                    <i class="fas fa-external-link-alt" style="margin-left:auto;font-size:.75rem;opacity:.6"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skill" class="sec" style="background:var(--secondary)">
+    <div class="container">
+        <h2 class="ttl" data-t="nav_skill">SKILLS</h2>
+        <div class="sg">
+            <div class="sk"><i class="fa-brands fa-java"></i><h4>Java</h4><p data-t="sk1">Multitasking language for apps, web, and IoT projects.</p></div>
+            <div class="sk"><i class="fa-brands fa-python"></i><h4>Python</h4><p data-t="sk2">Used for game scripts and automation.</p></div>
+            <div class="sk"><i class="fa-solid fa-code-merge"></i><h4>Git</h4><p data-t="sk3">Version control for project management.</p></div>
+            <div class="sk"><i class="fa-brands fa-laravel"></i><h4>Laravel</h4><p data-t="sk4">Framework for structuring web projects.</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery" class="sec">
+    <div class="container">
+        <h2 class="ttl" data-t="nav_gallery">GALLERY</h2>
+        <div class="gg">
+            <div class="gc">
+                <div class="gic"><img src="src/jax6.jpg" alt="Siak Rivers" class="gi" loading="lazy"></div>
+                <div class="gin"><span data-t="g1">Siak Rivers</span></div>
+            </div>
+            <div class="gc">
+                <div class="gic"><img src="src/jax5.jpg" alt="University of Riau" class="gi" loading="lazy"></div>
+                <div class="gin"><span data-t="g2">University Of Riau</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects" class="sec" style="background:var(--secondary)">
+    <div class="container">
+        <h2 class="ttl" data-t="nav_projects">PROJECTS</h2>
+        <div class="pg">
+            <div class="jc">
+                <div class="jh">
+                    <div class="jd"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="jti">E-Commerce.json</div>
+                    <i class="fas fa-code" style="color:#666;font-size:11px"></i>
+                </div>
+                <div class="jb">
+                    <div class="jl"><span class="ln">1</span><span class="jbr">{</span></div>
+                    <div class="jl"><span class="ln">2</span><span>&nbsp;&nbsp;<span class="jk">"name"</span>: <span class="js">"E-Commerce Engine"</span>,</span></div>
+                    <div class="jl"><span class="ln">3</span><span>&nbsp;&nbsp;<span class="jk">"type"</span>: <span class="js">"High scale core"</span>,</span></div>
+                    <div class="jl"><span class="ln">4</span><span>&nbsp;&nbsp;<span class="jk">"status"</span>: <span class="js">"Production"</span></span></div>
+                    <div class="jl"><span class="ln">5</span><span class="jbr">}</span></div>
+                </div>
+                <div class="jf">
+                    <a href="https://github.com/ajaxintcorps?tab=projects" class="jlk"><i class="fab fa-github"></i> <span data-t="csrc">Source</span></a>
+                </div>
+            </div>
+            <div class="jc">
+                <div class="jh">
+                    <div class="jd"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="jti">MusicPlayer.json</div>
+                    <i class="fas fa-music" style="color:#666;font-size:11px"></i>
+                </div>
+                <div class="jb">
+                    <div class="jl"><span class="ln">1</span><span class="jbr">{</span></div>
+                    <div class="jl"><span class="ln">2</span><span>&nbsp;&nbsp;<span class="jk">"name"</span>: <span class="js">"Web Music Player"</span>,</span></div>
+                    <div class="jl"><span class="ln">3</span><span>&nbsp;&nbsp;<span class="jk">"type"</span>: <span class="js">"PHP + JS Streaming"</span>,</span></div>
+                    <div class="jl"><span class="ln">4</span><span>&nbsp;&nbsp;<span class="jk">"feature"</span>: <span class="js">"Audio Visualizer"</span></span></div>
+                    <div class="jl"><span class="ln">5</span><span class="jbr">}</span></div>
+                </div>
+                <div class="jf">
+                    <a href="https://jaxportofolio.me/musicplayer.php" target="_blank" class="jlk"><i class="fas fa-music"></i> Demo</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="sec">
+    <div class="container">
+        <h2 class="ttl" data-t="nav_contact">CONTACT</h2>
+        <div class="sc">
+            <a href="https://discord.gg/nEyR2PfS"       class="gh" aria-label="GitHub">  <i class="fa-brands fa-github"></i></a>
+            <a href="https://www.linkedin.com/in/hencruza-mahendra-putra-74b05337b" class="li" aria-label="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
+            <a href="https://wa.me/6282289581213"         class="wa" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+            <a href="https://discord.com/users/Yzalways#9070" class="dc" aria-label="Discord"><i class="fa-brands fa-discord"></i></a>
+            <a href="https://www.instagram.com/crsdhz/"  class="ig" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+        </div>
+        <div class="cc">
+            <form id="cf" onsubmit="hs(event)">
+                <label data-t="fn">Name</label>
+                <input type="text"  name="name"    class="cf" required>
+                <label data-t="fe">Email</label>
+                <input type="email" name="email"   class="cf" required>
+                <label data-t="fm">Message</label>
+                <textarea name="message" rows="5"  class="cf" required></textarea>
+                <button type="submit" class="sb" id="sb" data-t="fb">SEND MESSAGE</button>
+                <div id="sm"></div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<footer class="ft">
+    <div class="container ftc">
+        <span data-t="ft_copy">No Copyright ©</span>
+        <a href="#contact" data-t="ft_contact">Contact Us</a>
+    </div>
+</footer>
+
+<script>
+/* ── TRANSLATIONS ─────────────────────────────────────────── */
+const T = {
+  en:{
+    nav_home:"Home",nav_about:"About",nav_skill:"Skill",
+    nav_gallery:"Gallery",nav_projects:"Projects",nav_contact:"Contact",
+    hero_sub:"Losers",hero_title:"Untitled",btn_explore:"EXPLORE WORK",
+    about_q:"Who is J?",exp_badge:"Sometimes to love someone u gotta be stranger.",
+    about_p1:"Nobody knows.",
+    about_p2:"A passionate developer and designer creating amazing digital experiences.",
+    mwl_txt:"Open Full Web Music Player",
+    csrc:"Source",g1:"Siak Rivers",g2:"University Of Riau",
+    sk1:"Multitasking language for apps, web, and IoT projects.",
+    sk2:"Used for game scripts and automation.",
+    sk3:"Version control for project management.",
+    sk4:"Framework for structuring web projects.",
+    fn:"Name",fe:"Email",fm:"Message",fb:"SEND MESSAGE",
+    ss:"SENDING…",sok:"Sent successfully!",se:"Error occurred.",
+    ft_copy:"No Copyright ©",ft_contact:"Contact Us"
+  },
+  id:{
+    nav_home:"Beranda",nav_about:"Tentang",nav_skill:"Keahlian",
+    nav_gallery:"Galeri",nav_projects:"Proyek",nav_contact:"Kontak",
+    hero_sub:"Nobody Knows",hero_title:"Untitled",btn_explore:"LIHAT KARYA",
+    about_q:"Siapa J?",exp_badge:"Terkadang untuk mencintai seseorang harus menjadi orang asing.",
+    about_p1:"Tidak ada yang tahu.",
+    about_p2:"Seorang developer dan desainer yang passionate menciptakan pengalaman digital luar biasa.",
+    mwl_txt:"Lihat Web Music Player Lengkap",
+    csrc:"Kode Sumber",g1:"Sungai Siak",g2:"Universitas Riau",
+    sk1:"Bahasa multitasking untuk membangun aplikasi, web, dan proyek IoT.",
+    sk2:"Digunakan untuk script game dan otomasi.",
+    sk3:"Kontrol versi untuk manajemen proyek.",
+    sk4:"Framework untuk struktur proyek web.",
+    fn:"Nama",fe:"Email",fm:"Pesan",fb:"KIRIM PESAN",
+    ss:"MENGIRIM…",sok:"Berhasil terkirim!",se:"Terjadi kesalahan.",
+    ft_copy:"No Copyright ©",ft_contact:"Hubungi Kami"
+  }
+};
+
+let lang = 'en';
+
+function applyLang(l) {
+  lang = l;
+  const t = T[l];
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const k = el.getAttribute('data-t');
+    if (t[k] !== undefined) el.textContent = t[k];
+  });
+  document.documentElement.lang = l;
+  document.getElementById('ll').textContent = l.toUpperCase();
+}
+
+document.getElementById('tlb').addEventListener('click', () =>
+  applyLang(lang === 'en' ? 'id' : 'en')
+);
+
+/* ── THEME ────────────────────────────────────────────────── */
+const tt = document.getElementById('tt');
+tt.addEventListener('change', function() {
+  document.body.classList.toggle('dark', this.checked);
+  localStorage.setItem('dk', this.checked ? '1' : '');
+});
+if (localStorage.getItem('dk')) { tt.checked = true; document.body.classList.add('dark'); }
+
+/* ── NAVBAR ───────────────────────────────────────────────── */
+const nav  = document.getElementById('nav');
+const nc   = document.getElementById('nc');
+const hbtn = document.getElementById('hbtn');
+
+function openNav()  { nav.classList.add('on');  document.body.style.overflow = 'hidden'; }
+function closeNav() { nav.classList.remove('on'); document.body.style.overflow = ''; }
+
+hbtn.addEventListener('click', openNav);
+nc.addEventListener('click', closeNav);
+nav.addEventListener('click', e => { if (e.target === nav) closeNav(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNav(); });
+nav.querySelectorAll('a').forEach(a => a.addEventListener('click', closeNav));
+
+/* active link on scroll */
+const secs = document.querySelectorAll('section[id]');
+const nls  = document.querySelectorAll('#nav a');
+function setActive() {
+  let cur = '';
+  secs.forEach(s => { if (window.scrollY >= s.offsetTop - 90) cur = s.id; });
+  nls.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + cur));
+}
+window.addEventListener('scroll', setActive, { passive: true });
+setActive();
+
+/* smooth scroll */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', function(e) {
+    const t = document.querySelector(this.getAttribute('href'));
+    if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+  });
+});
+
+/* ── LIGHTBOX ─────────────────────────────────────────────── */
+const lb  = document.getElementById('lb');
+const lbi = document.getElementById('lbi');
+document.getElementById('lbc').addEventListener('click', () => { lb.classList.remove('on'); document.body.style.overflow = ''; });
+lb.addEventListener('click', e => { if (e.target === lb) { lb.classList.remove('on'); document.body.style.overflow = ''; } });
+document.querySelectorAll('.gi').forEach(img =>
+  img.addEventListener('click', () => { lb.classList.add('on'); lbi.src = img.src; document.body.style.overflow = 'hidden'; })
+);
+
+/* ── CONTACT FORM ─────────────────────────────────────────── */
+async function hs(e) {
+  e.preventDefault();
+  const form = e.target;
+  const sb   = document.getElementById('sb');
+  const sm   = document.getElementById('sm');
+  const t    = T[lang];
+
+  sb.disabled = true;
+  sb.textContent = t.ss;
+  sm.textContent = '';
+  sm.style.color  = '';
+
+  try {
+    const fd = new FormData(form);
+    const res = await fetch('sentmail.php', { method: 'POST', body: fd });
+    const json = await res.json();
+
+    if (json.success) {
+      sm.style.color = '#27c93f';
+      sm.textContent = t.sok;
+      form.reset();
+    } else {
+      sm.style.color = '#e74c3c';
+      sm.textContent = t.se + (json.message ? ' ' + json.message : '');
+    }
+  } catch (err) {
+    sm.style.color = '#e74c3c';
+    sm.textContent = t.se;
+  } finally {
+    setTimeout(() => {
+      sb.disabled = false;
+      sb.textContent = t.fb;
+      sm.textContent = '';
+    }, 4000);
+  }
+}
+
+/* ── RAIN / KABUT / PETIR ─────────────────────────────────────── */
+(function() {
+  const c   = document.getElementById('rc');
+  const ctx = c.getContext('2d');
+  const clouds = document.getElementById('clouds');
+  const flash  = document.getElementById('lightning');
+  let drops = [], rafId = null, on = false, fading = false;
+  let lightningTimer = null;
+  let windT = 0, wind = 0; // angin yang berubah pelan, bikin hujan terasa hidup
+
+  function resize() { c.width = innerWidth; c.height = innerHeight; }
+  window.addEventListener('resize', resize, { passive: true });
+  resize();
+
+  // dua "lapisan" — jauh (tipis, pelan) & dekat (lebih jelas, cepat) supaya ada kedalaman
+  function mk(layer) {
+    const near = layer === 1;
+    return {
+      x: Math.random() * c.width,
+      y: Math.random() * -c.height,
+      l: (near ? 18 : 10) + Math.random() * (near ? 14 : 8),
+      s: (near ? 9 : 5) + Math.random() * (near ? 4 : 3),
+      a: (near ? 0.32 : 0.14) + Math.random() * 0.18,
+      w: near ? (1.1 + Math.random() * 0.6) : (0.6 + Math.random() * 0.4),
+      layer: near ? 1 : 0
+    };
+  }
+
+  function init() {
+    const total = Math.min(Math.floor(c.width * c.height / 7000), 320);
+    drops = [];
+    for (let i = 0; i < total; i++) drops.push(mk(i % 3 === 0 ? 1 : 0));
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, c.width, c.height);
+    const dark = document.body.classList.contains('dark');
+    const base = dark ? '195,210,235' : '110,135,180';
+
+    // angin sepoi yang berubah pelan — tidak monoton
+    windT += 0.003;
+    wind = Math.sin(windT) * 1.1 + Math.sin(windT * 2.7) * 0.4;
+
+    drops.forEach(d => {
+      const dx = wind * (d.layer ? 1 : 0.5);
+      d.y += d.s;
+      d.x += dx;
+
+      if (d.y - d.l > c.height || d.x < -20 || d.x > c.width + 20) {
+        Object.assign(d, mk(d.layer));
+        d.y = Math.random() * -60;
+      }
+
+      const g = ctx.createLinearGradient(d.x, d.y - d.l, d.x + dx, d.y);
+      g.addColorStop(0, `rgba(${base},0)`);
+      g.addColorStop(1, `rgba(${base},${d.a.toFixed(2)})`);
+      ctx.beginPath();
+      ctx.moveTo(d.x, d.y - d.l);
+      ctx.lineTo(d.x + dx, d.y);
+      ctx.strokeStyle = g; ctx.lineWidth = d.w; ctx.lineCap = 'round';
+      ctx.stroke();
+    });
+  }
+
+  function loop() {
+    if (!on && !fading) return;
+    draw();
+    rafId = requestAnimationFrame(loop);
+    if (fading) {
+      fading = false;
+      setTimeout(() => {
+        if (!on) { cancelAnimationFrame(rafId); rafId = null; ctx.clearRect(0,0,c.width,c.height); }
+      }, 1400);
+    }
+  }
+
+  /* petir — sekilas, dingin, tidak berlebihan */
+  function doFlash() {
+    if (!on) return;
+    flash.style.transition = 'opacity .08s ease-out';
+    flash.style.opacity = (0.08 + Math.random() * 0.14).toFixed(2);
+    setTimeout(() => {
+      flash.style.transition = 'opacity .6s ease-in';
+      flash.style.opacity = 0;
+    }, 90 + Math.random() * 70);
+    // sesekali ada kedipan kedua yang lebih lemah
+    if (Math.random() < 0.25) {
+      setTimeout(() => {
+        if (!on) return;
+        flash.style.transition = 'opacity .06s ease-out';
+        flash.style.opacity = (0.05 + Math.random() * 0.09).toFixed(2);
+        setTimeout(() => {
+          flash.style.transition = 'opacity .5s ease-in';
+          flash.style.opacity = 0;
+        }, 70);
+      }, 200 + Math.random() * 180);
+    }
+  }
+
+  function scheduleLightning() {
+    clearTimeout(lightningTimer);
+    if (!on) return;
+    const delay = 8000 + Math.random() * 14000; // jarang & tidak monoton — tiap ~8–22 detik
+    lightningTimer = setTimeout(() => {
+      doFlash();
+      scheduleLightning();
+    }, delay);
+  }
+
+  window.rainStart = function() {
+    if (on) return;
+    on = true; fading = false;
+    init(); c.classList.add('on');
+    clouds.classList.add('on');
+    document.body.classList.add('raining');
+    if (!rafId) rafId = requestAnimationFrame(loop);
+    scheduleLightning();
+  };
+
+  window.rainStop = function() {
+    if (!on) return;
+    on = false; fading = true;
+    c.classList.remove('on');
+    clouds.classList.remove('on');
+    document.body.classList.remove('raining');
+    clearTimeout(lightningTimer);
+    flash.style.transition = 'opacity .3s ease-in';
+    flash.style.opacity = 0;
+    if (!rafId) rafId = requestAnimationFrame(loop);
+  };
+})();
+
+/* ── TOAST NOTIFIKASI ─────────────────────────────────────── */
+function showToast(msg, ms = 3200) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), ms);
+}
+
+/* ── MINI PLAYER ──────────────────────────────────────────── */
+(async function() {
+  const au  = document.getElementById('mau');
+  const btn = document.getElementById('mpbtn');
+  const ico = document.getElementById('mpico');
+  const cov = document.getElementById('mpc');
+  const ttl = document.getElementById('mpt');
+  const art = document.getElementById('mpa');
+  const fil = document.getElementById('mpf');
+  const cur = document.getElementById('mc');
+  const dur = document.getElementById('md');
+  const bar = document.getElementById('mpb');
+
+  const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+  let playing = false;
+  let nowPlayingMsg = '';
+  const PI = '<path d="M8 5v14l11-7z"/>';
+  const PA = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+
+  try {
+    let s = null;
+    // 1) Coba ambil lagu yang di-push lewat Admin Panel ("featured")
+    const fr = await fetch('api.php?action=featured');
+    const fd = await fr.json();
+    s = fd.song || null;
+
+    // 2) Kalau belum ada yang di-push, fallback ke upload terbaru
+    if (!s) {
+      const r = await fetch('api.php?action=songs&limit=1&sort=uploaded_at');
+      const d = await r.json();
+      s = (d.songs || [])[0] || null;
+    }
+
+    if (!s) { ttl.innerHTML = '<span class="mpl">Belum ada lagu</span>'; return; }
+    ttl.textContent = s.title || 'Unknown';
+    art.textContent = s.artist || '';
+    au.src = s.stream_url; au.volume = 0.8;
+    cov.innerHTML = s.cover_url
+      ? `<img src="${s.cover_url}" alt="${s.title}" onerror="this.parentElement.innerHTML='🎵'">`
+      : '🎵';
+
+    // teks notifikasi "Now Playing" — diambil dari data lagu di database portofolio
+    const title  = s.title  || 'Unknown';
+    const artist = s.artist ? ` — ${s.artist}` : '';
+    nowPlayingMsg = `🎵 Now Playing: ${title}${artist}`;
+  } catch(_) {
+    ttl.innerHTML = '<span class="mpl">Tidak terhubung ke API</span>'; return;
+  }
+
+  function setState(p) {
+    playing = p;
+    ico.innerHTML = p ? PA : PI;
+    cov.classList.toggle('sp', p);
+    p ? rainStart() : rainStop();
+    if (p && nowPlayingMsg) showToast(nowPlayingMsg);
+  }
+
+  btn.addEventListener('click', () => playing ? au.pause() : au.play().catch(()=>{}));
+  bar.addEventListener('click', e => { if (au.duration) au.currentTime = (e.offsetX / bar.offsetWidth) * au.duration; });
+  au.addEventListener('play',  () => setState(true));
+  au.addEventListener('pause', () => setState(false));
+  au.addEventListener('ended', () => { setState(false); au.currentTime = 0; });
+  au.addEventListener('timeupdate', () => {
+    if (!au.duration) return;
+    fil.style.width = (au.currentTime / au.duration * 100) + '%';
+    cur.textContent = fmt(au.currentTime);
+    dur.textContent = fmt(au.duration);
+  });
+  au.addEventListener('loadedmetadata', () => { dur.textContent = fmt(au.duration); });
+})();
+</script>
+</body>
+</html>
